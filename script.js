@@ -26,21 +26,26 @@ document.getElementById("ticketForm").addEventListener("submit", function(e) {
 document.getElementById("confirmBtn").addEventListener("click", function() {
   const ticketId = "CM-" + Math.floor(Math.random() * 1000000);
 
-  new QRious({
+  const qr = new QRious({
     element: document.getElementById("qr"),
     value:
-      "City Metro Ticket\n" +
-      userData.ticket + "\n" +
-      "Passenger: " + userData.name + "\n" +
-      "Ticket ID: " + ticketId,
-    size: 200
+      "CITY METRO\n" +
+      "Ticket: " + userData.ticket + "\n" +
+      "Name: " + userData.name + "\n" +
+      "ID: " + ticketId,
+    size: 220
   });
 
+  // Convert QR to image
+  const qrImage = document.getElementById("qr").toDataURL("image/png");
+
+  // Send email with QR
   emailjs.send(SERVICE_ID, TEMPLATE_ID, {
     name: userData.name,
     email: userData.email,
     ticket: userData.ticket,
-    ticket_id: ticketId
+    ticket_id: ticketId,
+    qr_image: qrImage
   });
 
   document.getElementById("confirm").hidden = true;
