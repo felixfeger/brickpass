@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>City Metro | Buy Tickets</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <!-- EmailJS -->
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
+  <!-- QR Code Generator -->
+  <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
+</head>
+
+<body>
+
+  <div class="card">
+    <h1>City Metro</h1>
+    <p class="subtitle">Official Online Ticketing</p>
+
+    <!-- PURCHASE FORM -->
+    <form id="ticketForm">
+      <label>Ticket Type</label>
+      <select id="ticket" required>
+        <option value="Single Ride — $1.25">Single Ride — $1.25</option>
+        <option value="Day Pass — $5.00">Day Pass — $5.00</option>
+        <option value="Week Pass — $18.00">Week Pass — $18.00</option>
+      </select>
+
+      <label>Passenger Name</label>
+      <input id="name" type="text" required>
+
+      <label>Email Address</label>
+      <input id="email" type="email" required>
+
+      <h3>Payment (Simulation)</h3>
+      <input type="text" placeholder="Card Number (Demo Only)" required>
+      <input type="text" placeholder="MM / YY" required>
+      <input type="text" placeholder="CVC" required>
+
+      <button type="submit">Pay & Receive Ticket</button>
+
+      <p class="fine">
+        This is a simulated payment for demonstration only.
+        No real payment is processed.
+      </p>
+    </form>
+
+    <!-- SUCCESS SCREEN -->
+    <div id="success" hidden>
+      <h2>Payment Successful ✅</h2>
+      <canvas id="qr"></canvas>
+      <p>Your digital ticket has been sent by email.</p>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
