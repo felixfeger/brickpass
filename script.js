@@ -4,50 +4,63 @@
 emailjs.init("hFJFYEsqIK88SbfAb");
 const SERVICE_ID = "noreply_citymetro";
 const TEMPLATE_ID = "brickpass_ticket";
-// ============================
+// =======================
 
 let userData = {};
 
-document.getElementById("ticketForm").addEventListener("submit", function(e) {
+document.getElementById("ticketForm").addEventListener("submit", e => {
   e.preventDefault();
 
-  userData.ticket = document.getElementById("ticket").value;
-  userData.name = document.getElementById("name").value;
-  userData.email = document.getElementById("email").value;
+  userData.ticket = ticket.value;
+  userData.name = name.value;
+  userData.email = email.value;
 
-  document.getElementById("cTicket").textContent = userData.ticket;
-  document.getElementById("cName").textContent = userData.name;
-  document.getElementById("cEmail").textContent = userData.email;
+  cTicket.textContent = userData.ticket;
+  cName.textContent = userData.name;
+  cEmail.textContent = userData.email;
 
-  document.getElementById("ticketForm").hidden = true;
-  document.getElementById("confirm").hidden = false;
+  ticketForm.hidden = true;
+  confirm.hidden = false;
 });
 
-document.getElementById("confirmBtn").addEventListener("click", function() {
-  const ticketId = "CM-" + Math.floor(Math.random() * 1000000);
+confirmBtn.addEventListener("click", () => {
+  const now = Date.now();
+  let type, expires;
 
-  const qr = new QRious({
-    element: document.getElementById("qr"),
-    value:
-      "CITY METRO\n" +
-      "Ticket: " + userData.ticket + "\n" +
-      "Name: " + userData.name + "\n" +
-      "ID: " + ticketId,
+  if (userData.ticket.includes("Single")) {
+    type = "single";
+    expires = now + 3600000;
+  } else if (userData.ticket.includes("Day")) {
+    type = "day";
+    expires = now + 86400000;
+  } else {
+    type = "week";
+    expires = now + 604800000;
+  }
+
+  const ticketData = {
+    system: "City Metro",
+    id: "CM-" + Math.floor(Math.random() * 1000000),
+    name: userData.name,
+    type: type,
+    expires: expires
+  };
+
+  new QRious({
+    element: qr,
+    value: JSON.stringify(ticketData),
     size: 220
   });
 
-  // Convert QR to image
-  const qrImage = document.getElementById("qr").toDataURL("image/png");
+  const qrImage = qr.toDataURL("image/png");
 
-  // Send email with QR
   emailjs.send(SERVICE_ID, TEMPLATE_ID, {
     name: userData.name,
-    email: userData.email,
     ticket: userData.ticket,
-    ticket_id: ticketId,
+    ticket_id: ticketData.id,
     qr_image: qrImage
   });
 
-  document.getElementById("confirm").hidden = true;
-  document.getElementById("success").hidden = false;
+  confirm.hidden = true;
+  success.hidden = false;
 });
