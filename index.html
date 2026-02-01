@@ -2,36 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>City Metro | Buy Tickets</title>
+  <title>City Metro | Tickets</title>
 
   <link rel="stylesheet" href="style.css">
 
-  <!-- EmailJS -->
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-
-  <!-- QR Code -->
   <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
 </head>
 
 <body>
-
 <div class="card">
   <h1>City Metro</h1>
-  <p class="subtitle">Official Online Ticketing</p>
+  <p class="subtitle">Online BrickPass Store</p>
 
-  <!-- STEP 1: PAYMENT FORM -->
+  <!-- STEP 1 -->
   <form id="ticketForm">
     <label>Ticket Type</label>
     <select id="ticket" required>
-      <option value="Single Ride — $1.25">Single Ride — $1.25</option>
-      <option value="Day Pass — $5.00">Day Pass — $5.00</option>
-      <option value="Week Pass — $18.00">Week Pass — $18.00</option>
+      <option>Single Ride — $1.25</option>
+      <option>Day Pass — $5.00</option>
+      <option>Week Pass — $18.00</option>
     </select>
 
-    <label>Passenger Name</label>
+    <label>Name</label>
     <input id="name" required>
 
-    <label>Email Address</label>
+    <label>Email</label>
     <input id="email" type="email" required>
 
     <h3>Payment (Simulation)</h3>
@@ -40,27 +36,23 @@
     <input placeholder="CVC" required>
 
     <button type="submit">Continue</button>
-
-    <p class="fine">
-      Simulated payment for demonstration only.
-    </p>
+    <p class="fine">Simulated payment only</p>
   </form>
 
-  <!-- STEP 2: CONFIRMATION -->
+  <!-- STEP 2 -->
   <div id="confirm" hidden>
     <h2>Confirm Purchase</h2>
     <p><strong>Ticket:</strong> <span id="cTicket"></span></p>
     <p><strong>Name:</strong> <span id="cName"></span></p>
     <p><strong>Email:</strong> <span id="cEmail"></span></p>
-
     <button id="confirmBtn">Confirm & Issue Ticket</button>
   </div>
 
-  <!-- STEP 3: SUCCESS -->
+  <!-- STEP 3 -->
   <div id="success" hidden>
-    <h2>Purchase Complete ✅</h2>
+    <h2>Ticket Issued ✅</h2>
     <canvas id="qr"></canvas>
-    <p>Your digital ticket has been emailed.</p>
+    <p>Your ticket has been emailed.</p>
   </div>
 </div>
 
