@@ -2,19 +2,24 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>City Metro |Recharge BrickPass Card</title>
+<title>City Metro | Manage BrickPass</title>
 <link rel="stylesheet" href="style.css">
+
+<!-- QR Library -->
 <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
+<!-- EmailJS -->
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 </head>
+
 <body>
 <div class="card">
   <h1>City Metro</h1>
   <p class="subtitle">Recharge Your BrickPass</p>
 
   <form id="lookupForm">
-    <label>Enter BrickPass Card ID</label>
+    <label>Enter BrickPass ID</label>
     <input id="ticketIdInput" required>
-    <button type="submit">Load Card</button>
+    <button type="submit">Load BrickPass</button>
   </form>
 
   <div id="manageSection" hidden>
@@ -33,38 +38,82 @@
     <label>Week Passes</label>
     <input id="addWeek" type="number" value="0" min="0">
     <button id="updateBtn">Update Passes</button>
+
+    <h4>QR Code</h4>
+    <canvas id="qrCanvas" width="220" height="220" style="border:2px solid #0a1f44; border-radius:8px;"></canvas>
   </div>
 </div>
 
-<script src="script.js"></script>
 <script>
+const SERVICE_ID = "YOUR_SERVICE_ID";
+const TEMPLATE_ID = "YOUR_TEMPLATE_ID";
+const PUBLIC_KEY = "YOUR_PUBLIC_KEY";
+emailjs.init(PUBLIC_KEY);
+
 const lookupForm = document.getElementById("lookupForm");
 const manageSection = document.getElementById("manageSection");
 
 lookupForm.addEventListener("submit", function(e){
   e.preventDefault();
-  const id = document.getElementById("ticketIdInput").value;
+  const id = document.getElementById("ticketIdInput").value.trim();
   const ticket = JSON.parse(localStorage.getItem(id));
   if(!ticket){ alert("Ticket not found"); return; }
 
-  document.getElementById("ticketIdDisplay").textContent = ticket.id;
-  document.getElementById("ticketName").textContent = ticket.name;
-  document.getElementById("singlesLeft").textContent = ticket.singles;
-  document.getElementById("dayLeft").textContent = ticket.dayPasses;
-  document.getElementById("weekLeft").textContent = ticket.weekPasses;
-  document.getElementById("activatedAt").textContent = ticket.activated? new Date(ticket.activated).toLocaleString():"Not yet";
-
-  manageSection.hidden = false;
+  showTicket(ticket);
 
   document.getElementById("updateBtn").onclick = function(){
     ticket.singles += parseInt(document.getElementById("addSingles").value)||0;
     ticket.dayPasses += parseInt(document.getElementById("addDay").value)||0;
     ticket.weekPasses += parseInt(document.getElementById("addWeek").value)||0;
+
     localStorage.setItem(ticket.id, JSON.stringify(ticket));
+
     alert("Passes updated!");
-    location.reload();
+
+    // Generate updated QR (same ticket ID)
+    new QRious({
+      element: document.getElementById("qrCanvas"),
+      value: ticket.id,
+      size: 220
+    });
+
+    // Send updated BrickPass email
+    const qrImage = document.getElementById("qrCanvas").toDataURL("image/png");
+    emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+      name: ticket.name,
+      ticket_id: ticket.id,
+      qr_image: qrImage
+    }).then(
+      () => console.log("Updated BrickPass email sent"),
+      err => console.error("Email failed:", err)
+    );
+
+    // Reset input fields
+    document.getElementById("addSingles").value = 0;
+    document.getElementById("addDay").value = 0;
+    document.getElementById("addWeek").value = 0;
+
+    showTicket(ticket); // Refresh display
   }
 });
+
+function showTicket(ticket){
+  document.getElementById("ticketIdDisplay").textContent = ticket.id;
+  document.getElementById("ticketName").textContent = ticket.name;
+  document.getElementById("singlesLeft").textContent = ticket.singles;
+  document.getElementById("dayLeft").textContent = ticket.dayPasses;
+  document.getElementById("weekLeft").textContent = ticket.weekPasses;
+  document.getElementById("activatedAt").textContent = ticket.activated ? new Date(ticket.activated).toLocaleString() : "Not yet";
+
+  manageSection.hidden = false;
+
+  // Display QR
+  new QRious({
+    element: document.getElementById("qrCanvas"),
+    value: ticket.id,
+    size: 220
+  });
+}
 </script>
 </body>
 </html>
