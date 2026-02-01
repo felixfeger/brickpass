@@ -1,9 +1,11 @@
-// ============================
-// 🔴 YOU MUST CHANGE THESE 🔴
-// ============================
-emailjs.init("hFJFYEsqIK88SbfAb");
-const SERVICE_ID = "noreply_citymetro";
-const TEMPLATE_ID = "brickpass_ticket";
+/*********************************
+ * City Metro – Passenger Script
+ *********************************/
+
+// ===== 🔴 CHANGE THESE VALUES 🔴 =====
+emailjs.init("BU1Y1adeN-gshpVKY");        // ← put your EmailJS Public Key
+const SERVICE_ID = "noreply_citymetro";   // ← put your EmailJS Service ID
+const TEMPLATE_ID = "brickpass_ticket"; // ← put your EmailJS Template ID
 // ====================================
 
 let userData = {};
@@ -77,4 +79,4 @@ document.getElementById("confirmBtn").addEventListener("click", function () {
   // STEP 3 → Always show success screen
   document.getElementById("confirm").hidden = true;
   document.getElementById("success").hidden = false;
-});;
+});
