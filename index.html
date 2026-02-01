@@ -1,63 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>City Metro | BrickPass Cards</title>
-
-  <link rel="stylesheet" href="style.css">
-
-  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
+<meta charset="UTF-8">
+<title>City Metro | Create Ticket</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
 </head>
 
 <body>
 <div class="card">
   <h1>City Metro</h1>
-  <p class="subtitle">Official BrickPass Cards</p>
+  <p class="subtitle">Create Your Ticket</p>
 
-  <!-- STEP 1: Purchase Form -->
   <form id="ticketForm">
-    <label>Ticket Type</label>
-    <select id="ticket" required>
-      <option>Single Ride — $1.25</option>
-      <option>Day Pass — $5.00</option>
-      <option>Week Pass — $18.00</option>
-    </select>
-
     <label>Name</label>
     <input id="name" required>
 
-    <label>Email</label>
-    <input id="email" type="email" required>
+    <h3>Initial Passes</h3>
+    <label>Singles</label>
+    <input id="singles" type="number" value="1" min="0">
+    <label>Day Passes</label>
+    <input id="day" type="number" value="0" min="0">
+    <label>Week Passes</label>
+    <input id="week" type="number" value="0" min="0">
 
-    <h3>Payment (Simulation)</h3>
-    <input placeholder="Card Number (Demo)" required>
-    <input placeholder="MM / YY" required>
-    <input placeholder="CVC" required>
-
-    <button type="submit">Continue</button>
-    <p class="fine">Simulated payment only</p>
+    <button type="submit">Generate Ticket</button>
   </form>
 
-  <!-- STEP 2: Confirm Purchase -->
-  <div id="confirm" hidden>
-    <h2>Confirm Purchase</h2>
-    <p><strong>Ticket:</strong> <span id="cTicket"></span></p>
-    <p><strong>Name:</strong> <span id="cName"></span></p>
-    <p><strong>Email:</strong> <span id="cEmail"></span></p>
-    <button id="confirmBtn">Confirm & Issue Ticket</button>
-  </div>
-
-  <!-- STEP 3: Success Page -->
   <div id="success" hidden>
-    <h2>Ticket Issued ✅</h2>
-    <div>
-      <canvas id="qr" width="220" height="220" style="border:2px solid #0a1f44; border-radius:8px;"></canvas>
-    </div>
-    <p>Your ticket has been emailed.</p>
+    <h2>Ticket Created ✅</h2>
+    <canvas id="qr" width="220" height="220" style="border:2px solid #0a1f44; border-radius:8px;"></canvas>
+    <p>Ticket ID: <span id="ticketId"></span></p>
+    <p>Save this QR or ID. You can manage passes <a href="manage.html">here</a>.</p>
   </div>
 </div>
 
 <script src="script.js"></script>
+<script>
+document.getElementById("ticketForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  const name = document.getElementById("name").value;
+  const singles = parseInt(document.getElementById("singles").value)||0;
+  const day = parseInt(document.getElementById("day").value)||0;
+  const week = parseInt(document.getElementById("week").value)||0;
+
+  const id = "CM-" + Math.floor(Math.random()*1000000);
+  const ticket = {id,name,singles,dayPasses:day,weekPasses:week,activated:null};
+  localStorage.setItem(id, JSON.stringify(ticket));
+
+  document.getElementById("ticketForm").hidden = true;
+  document.getElementById("success").hidden = false;
+  document.getElementById("ticketId").textContent = id;
+
+  new QRious({
+    element: document.getElementById("qr"),
+    value: id,
+    size: 220
+  });
+});
+</script>
 </body>
 </html>
