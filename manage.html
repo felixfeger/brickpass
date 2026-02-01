@@ -2,33 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>City Metro | Manage BrickPass</title>
+<title>City Metro | Manage Tickets</title>
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
 </head>
 <body>
 <div class="card">
-  <h1>City Metro | Manage BrickPass</h1>
+  <h1>City Metro | Manage Tickets</h1>
 
-  <!-- Create new ticket -->
-  <h2>Create a new BrickPass</h2>
-  <form id="createForm">
-    <label>Name:</label>
-    <input id="nameInput" required>
-    <label>Ticket ID:</label>
-    <input id="idInput" required placeholder="Unique ID">
-    <label>Singles:</label>
-    <input id="singlesInput" type="number" min="0" value="0">
-    <label>Day Passes:</label>
-    <input id="dayInput" type="number" min="0" value="0">
-    <label>Week Passes:</label>
-    <input id="weekInput" type="number" min="0" value="0">
-    <button type="submit">Create Ticket</button>
-  </form>
-
-  <hr>
-
-  <!-- Recharge existing ticket -->
   <h2>Recharge Ticket</h2>
   <form id="rechargeForm">
     <label>Ticket ID:</label>
@@ -42,39 +23,15 @@
     <button type="submit">Recharge</button>
   </form>
 
-  <hr>
-
-  <!-- QR code display -->
-  <h2>BrickPass QR Code</h2>
+  <h2>Ticket QR</h2>
   <canvas id="qrCanvas" width="220" height="220" style="border:2px solid #0a1f44; border-radius:8px;"></canvas>
 </div>
 
 <script>
-const createForm = document.getElementById("createForm");
-const rechargeForm = document.getElementById("rechargeForm");
+const form = document.getElementById("rechargeForm");
 const qrCanvas = document.getElementById("qrCanvas");
 
-// Create new ticket
-createForm.addEventListener("submit", e => {
-  e.preventDefault();
-  const ticket = {
-    id: document.getElementById("idInput").value.trim(),
-    name: document.getElementById("nameInput").value.trim(),
-    singles: parseInt(document.getElementById("singlesInput").value)||0,
-    dayPasses: parseInt(document.getElementById("dayInput").value)||0,
-    weekPasses: parseInt(document.getElementById("weekInput").value)||0,
-    activated: null,
-    dayActivated: null,
-    weekActivated: null
-  };
-
-  localStorage.setItem(ticket.id, JSON.stringify(ticket));
-  alert("Ticket created!");
-  generateQR(ticket.id);
-});
-
-// Recharge ticket
-rechargeForm.addEventListener("submit", e => {
+form.addEventListener("submit", e => {
   e.preventDefault();
   const id = document.getElementById("rechargeId").value.trim();
   const ticket = JSON.parse(localStorage.getItem(id));
@@ -84,19 +41,17 @@ rechargeForm.addEventListener("submit", e => {
   ticket.dayPasses += parseInt(document.getElementById("addDay").value)||0;
   ticket.weekPasses += parseInt(document.getElementById("addWeek").value)||0;
 
+  // Save updated ticket
   localStorage.setItem(ticket.id, JSON.stringify(ticket));
   alert("Ticket recharged!");
-  generateQR(ticket.id);
-});
 
-// Generate QR
-function generateQR(ticketID){
+  // Generate QR code (ticket ID)
   new QRious({
     element: qrCanvas,
-    value: ticketID,  // Critical: QR encodes only the ticket ID
+    value: ticket.id,
     size: 220
   });
-}
+});
 </script>
 </body>
 </html>
