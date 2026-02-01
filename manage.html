@@ -45,9 +45,9 @@
 </div>
 
 <script>
-const SERVICE_ID = "YOUR_SERVICE_ID";
-const TEMPLATE_ID = "YOUR_TEMPLATE_ID";
-const PUBLIC_KEY = "YOUR_PUBLIC_KEY";
+const SERVICE_ID = "noreply_citymetro";
+const TEMPLATE_ID = "brickpass_ticket";
+const PUBLIC_KEY = "BU1Y1adeN-gshpVKY";
 emailjs.init(PUBLIC_KEY);
 
 const lookupForm = document.getElementById("lookupForm");
@@ -62,13 +62,15 @@ lookupForm.addEventListener("submit", function(e){
   showTicket(ticket);
 
   document.getElementById("updateBtn").onclick = function(){
+    // Add new passes WITHOUT touching activation timestamps
     ticket.singles += parseInt(document.getElementById("addSingles").value)||0;
     ticket.dayPasses += parseInt(document.getElementById("addDay").value)||0;
     ticket.weekPasses += parseInt(document.getElementById("addWeek").value)||0;
 
+    // Save updated ticket
     localStorage.setItem(ticket.id, JSON.stringify(ticket));
 
-    alert("Passes updated!");
+    alert("Passes updated! Activation will only start when scanned.");
 
     // Generate updated QR (same ticket ID)
     new QRious({
@@ -103,6 +105,8 @@ function showTicket(ticket){
   document.getElementById("singlesLeft").textContent = ticket.singles;
   document.getElementById("dayLeft").textContent = ticket.dayPasses;
   document.getElementById("weekLeft").textContent = ticket.weekPasses;
+
+  // Show activation times if already scanned
   document.getElementById("activatedAt").textContent = ticket.activated ? new Date(ticket.activated).toLocaleString() : "Not yet";
 
   manageSection.hidden = false;
