@@ -4,15 +4,12 @@
 <meta charset="UTF-8">
 <title>City Metro | Validator</title>
 <link rel="stylesheet" href="style.css">
-
-<!-- QR Scanner Library -->
 <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
 </head>
-
 <body>
 <div class="card">
   <h1>City Metro | Validator</h1>
-  <p>Scan BrickPass QR to activate ticket</p>
+  <p>Scan QR to activate ticket</p>
 
   <video id="video" width="300" height="300" autoplay></video>
 
@@ -31,7 +28,7 @@ navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}})
 const canvas = document.createElement("canvas");
 const ctx = canvas.getContext("2d");
 
-// Main scan loop
+// Scan loop
 function scan(){
   if(video.readyState === video.HAVE_ENOUGH_DATA){
     canvas.width = video.videoWidth;
@@ -47,15 +44,15 @@ function scan(){
 scan();
 
 // Validate / activate ticket
-function validate(id){
-  const ticket = JSON.parse(localStorage.getItem(id));
+function validate(ticketID){
+  const ticket = JSON.parse(localStorage.getItem(ticketID));
   if(!ticket){ show("INVALID TICKET ❌"); return; }
 
   const now = Date.now();
   let status = "";
   let passActivated = false;
 
-  // SINGLE: activate first if not activated
+  // SINGLE
   if(ticket.singles > 0 && !ticket.activated){
     ticket.activated = now;
     passActivated = true;
@@ -64,7 +61,7 @@ function validate(id){
     status = "Single ride already activated ⚠️";
   }
 
-  // DAY PASS: activate if no single used
+  // DAY
   if(!passActivated && ticket.dayPasses > 0){
     if(!ticket.dayActivated){
       ticket.dayActivated = now;
@@ -75,7 +72,7 @@ function validate(id){
     }
   }
 
-  // WEEK PASS: activate if no single/day used
+  // WEEK
   if(!passActivated && ticket.weekPasses > 0){
     if(!ticket.weekActivated){
       ticket.weekActivated = now;
@@ -86,15 +83,13 @@ function validate(id){
     }
   }
 
-  // Save updated ticket
   localStorage.setItem(ticket.id, JSON.stringify(ticket));
 
-  // Compute expiration info
+  // Expiration info
   const singleExpire = ticket.activated ? new Date(ticket.activated + 2*60*60*1000).toLocaleString() : "Not yet";
   const dayExpire = ticket.dayActivated ? new Date(ticket.dayActivated + 24*60*60*1000).toLocaleString() : "Not yet";
   const weekExpire = ticket.weekActivated ? new Date(ticket.weekActivated + 7*24*60*60*1000).toLocaleString() : "Not yet";
 
-  // Display result
   show(status, ticket, singleExpire, dayExpire, weekExpire);
 }
 
