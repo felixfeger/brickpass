@@ -30,8 +30,7 @@ document.getElementById("ticketForm").addEventListener("submit", function (e) {
 document.getElementById("confirmBtn").addEventListener("click", function () {
   const now = Date.now();
 
-  let type;
-  let expires;
+  let type, expires;
 
   if (userData.ticket.includes("Single")) {
     type = "single";
@@ -52,30 +51,33 @@ document.getElementById("confirmBtn").addEventListener("click", function () {
     expires: expires
   };
 
-  // Generate QR code
   const qrCanvas = document.getElementById("qr");
+  qrCanvas.style.display = "block";
+
+  // Generate QR code
   new QRious({
     element: qrCanvas,
     value: JSON.stringify(ticketData),
     size: 220
   });
 
-  // Convert QR to image for email
   const qrImage = qrCanvas.toDataURL("image/png");
 
-  // Send email (NON-BLOCKING — app continues even if it fails)
-  emailjs
-    .send(SERVICE_ID, TEMPLATE_ID, {
-      name: userData.name,
-      ticket: userData.ticket,
-      ticket_id: ticketData.id,
-      qr_image: qrImage
-    })
-    .then(
-      () => console.log("Email sent successfully"),
-      (err) => console.error("Email failed:", err)
-    );
+  // Send email (non-blocking)
+  emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+    name: userData.name,
+    ticket: userData.ticket,
+    ticket_id: ticketData.id,
+    qr_image: qrImage
+  }).then(
+    () => console.log("Email sent"),
+    err => console.error("Email failed:", err)
+  );
 
+  // Always show success page
+  document.getElementById("confirm").hidden = true;
+  document.getElementById("success").hidden = false;
+});
   // STEP 3 → Always show success screen
   document.getElementById("confirm").hidden = true;
   document.getElementById("success").hidden = false;
