@@ -4,38 +4,42 @@
 emailjs.init("hFJFYEsqIK88SbfAb");
 const SERVICE_ID = "noreply_citymetro";
 const TEMPLATE_ID = "brickpass_ticket";
-// =======================
+// ====================================
 
 let userData = {};
 
-document.getElementById("ticketForm").addEventListener("submit", e => {
+// STEP 1 → Payment form submit
+document.getElementById("ticketForm").addEventListener("submit", function (e) {
   e.preventDefault();
 
-  userData.ticket = ticket.value;
-  userData.name = name.value;
-  userData.email = email.value;
+  userData.ticket = document.getElementById("ticket").value;
+  userData.name = document.getElementById("name").value;
+  userData.email = document.getElementById("email").value;
 
-  cTicket.textContent = userData.ticket;
-  cName.textContent = userData.name;
-  cEmail.textContent = userData.email;
+  document.getElementById("cTicket").textContent = userData.ticket;
+  document.getElementById("cName").textContent = userData.name;
+  document.getElementById("cEmail").textContent = userData.email;
 
-  ticketForm.hidden = true;
-  confirm.hidden = false;
+  document.getElementById("ticketForm").hidden = true;
+  document.getElementById("confirm").hidden = false;
 });
 
-confirmBtn.addEventListener("click", () => {
+// STEP 2 → Confirm purchase
+document.getElementById("confirmBtn").addEventListener("click", function () {
   const now = Date.now();
-  let type, expires;
+
+  let type;
+  let expires;
 
   if (userData.ticket.includes("Single")) {
     type = "single";
-    expires = now + 3600000;
+    expires = now + 1000 * 60 * 60; // 1 hour
   } else if (userData.ticket.includes("Day")) {
     type = "day";
-    expires = now + 86400000;
+    expires = now + 1000 * 60 * 60 * 24;
   } else {
     type = "week";
-    expires = now + 604800000;
+    expires = now + 1000 * 60 * 60 * 24 * 7;
   }
 
   const ticketData = {
@@ -46,21 +50,31 @@ confirmBtn.addEventListener("click", () => {
     expires: expires
   };
 
+  // Generate QR code
+  const qrCanvas = document.getElementById("qr");
   new QRious({
-    element: qr,
+    element: qrCanvas,
     value: JSON.stringify(ticketData),
     size: 220
   });
 
-  const qrImage = qr.toDataURL("image/png");
+  // Convert QR to image for email
+  const qrImage = qrCanvas.toDataURL("image/png");
 
-  emailjs.send(SERVICE_ID, TEMPLATE_ID, {
-    name: userData.name,
-    ticket: userData.ticket,
-    ticket_id: ticketData.id,
-    qr_image: qrImage
-  });
+  // Send email (NON-BLOCKING — app continues even if it fails)
+  emailjs
+    .send(SERVICE_ID, TEMPLATE_ID, {
+      name: userData.name,
+      ticket: userData.ticket,
+      ticket_id: ticketData.id,
+      qr_image: qrImage
+    })
+    .then(
+      () => console.log("Email sent successfully"),
+      (err) => console.error("Email failed:", err)
+    );
 
-  confirm.hidden = true;
-  success.hidden = false;
-});
+  // STEP 3 → Always show success screen
+  document.getElementById("confirm").hidden = true;
+  document.getElementById("success").hidden = false;
+});;
