@@ -4,117 +4,96 @@
 <meta charset="UTF-8">
 <title>City Metro | Manage BrickPass</title>
 <link rel="stylesheet" href="style.css">
-
-<!-- QR Library -->
 <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
-<!-- EmailJS -->
-<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 </head>
-
 <body>
 <div class="card">
-  <h1>City Metro</h1>
-  <p class="subtitle">Recharge Your BrickPass</p>
+  <h1>City Metro | Manage BrickPass</h1>
 
-  <form id="lookupForm">
-    <label>Enter BrickPass ID</label>
-    <input id="ticketIdInput" required>
-    <button type="submit">Load BrickPass</button>
+  <!-- Create new ticket -->
+  <h2>Create a new BrickPass</h2>
+  <form id="createForm">
+    <label>Name:</label>
+    <input id="nameInput" required>
+    <label>Ticket ID:</label>
+    <input id="idInput" required placeholder="Unique ID">
+    <label>Singles:</label>
+    <input id="singlesInput" type="number" min="0" value="0">
+    <label>Day Passes:</label>
+    <input id="dayInput" type="number" min="0" value="0">
+    <label>Week Passes:</label>
+    <input id="weekInput" type="number" min="0" value="0">
+    <button type="submit">Create Ticket</button>
   </form>
 
-  <div id="manageSection" hidden>
-    <h3>Ticket: <span id="ticketIdDisplay"></span></h3>
-    <p>Name: <span id="ticketName"></span></p>
-    <p>Singles: <span id="singlesLeft"></span></p>
-    <p>Day Passes: <span id="dayLeft"></span></p>
-    <p>Week Passes: <span id="weekLeft"></span></p>
-    <p>Activated at: <span id="activatedAt"></span></p>
+  <hr>
 
-    <h4>Add Passes</h4>
-    <label>Singles</label>
-    <input id="addSingles" type="number" value="0" min="0">
-    <label>Day Passes</label>
-    <input id="addDay" type="number" value="0" min="0">
-    <label>Week Passes</label>
-    <input id="addWeek" type="number" value="0" min="0">
-    <button id="updateBtn">Update Passes</button>
+  <!-- Recharge existing ticket -->
+  <h2>Recharge Ticket</h2>
+  <form id="rechargeForm">
+    <label>Ticket ID:</label>
+    <input id="rechargeId" required>
+    <label>Add Singles:</label>
+    <input id="addSingles" type="number" min="0" value="0">
+    <label>Add Day Passes:</label>
+    <input id="addDay" type="number" min="0" value="0">
+    <label>Add Week Passes:</label>
+    <input id="addWeek" type="number" min="0" value="0">
+    <button type="submit">Recharge</button>
+  </form>
 
-    <h4>QR Code</h4>
-    <canvas id="qrCanvas" width="220" height="220" style="border:2px solid #0a1f44; border-radius:8px;"></canvas>
-  </div>
+  <hr>
+
+  <!-- QR code display -->
+  <h2>BrickPass QR Code</h2>
+  <canvas id="qrCanvas" width="220" height="220" style="border:2px solid #0a1f44; border-radius:8px;"></canvas>
 </div>
 
 <script>
-const SERVICE_ID = "noreply_citymetro";
-const TEMPLATE_ID = "brickpass_ticket";
-const PUBLIC_KEY = "BU1Y1adeN-gshpVKY";
-emailjs.init(PUBLIC_KEY);
+const createForm = document.getElementById("createForm");
+const rechargeForm = document.getElementById("rechargeForm");
+const qrCanvas = document.getElementById("qrCanvas");
 
-const lookupForm = document.getElementById("lookupForm");
-const manageSection = document.getElementById("manageSection");
-
-lookupForm.addEventListener("submit", function(e){
+// Create new ticket
+createForm.addEventListener("submit", e => {
   e.preventDefault();
-  const id = document.getElementById("ticketIdInput").value.trim();
-  const ticket = JSON.parse(localStorage.getItem(id));
-  if(!ticket){ alert("Ticket not found"); return; }
+  const ticket = {
+    id: document.getElementById("idInput").value.trim(),
+    name: document.getElementById("nameInput").value.trim(),
+    singles: parseInt(document.getElementById("singlesInput").value)||0,
+    dayPasses: parseInt(document.getElementById("dayInput").value)||0,
+    weekPasses: parseInt(document.getElementById("weekInput").value)||0,
+    activated: null,
+    dayActivated: null,
+    weekActivated: null
+  };
 
-  showTicket(ticket);
-
-  document.getElementById("updateBtn").onclick = function(){
-    // Add new passes WITHOUT touching activation timestamps
-    ticket.singles += parseInt(document.getElementById("addSingles").value)||0;
-    ticket.dayPasses += parseInt(document.getElementById("addDay").value)||0;
-    ticket.weekPasses += parseInt(document.getElementById("addWeek").value)||0;
-
-    // Save updated ticket
-    localStorage.setItem(ticket.id, JSON.stringify(ticket));
-
-    alert("Passes updated! Activation will only start when scanned.");
-
-    // Generate updated QR (same ticket ID)
-    new QRious({
-      element: document.getElementById("qrCanvas"),
-      value: ticket.id,
-      size: 220
-    });
-
-    // Send updated BrickPass email
-    const qrImage = document.getElementById("qrCanvas").toDataURL("image/png");
-    emailjs.send(SERVICE_ID, TEMPLATE_ID, {
-      name: ticket.name,
-      ticket_id: ticket.id,
-      qr_image: qrImage
-    }).then(
-      () => console.log("Updated BrickPass email sent"),
-      err => console.error("Email failed:", err)
-    );
-
-    // Reset input fields
-    document.getElementById("addSingles").value = 0;
-    document.getElementById("addDay").value = 0;
-    document.getElementById("addWeek").value = 0;
-
-    showTicket(ticket); // Refresh display
-  }
+  localStorage.setItem(ticket.id, JSON.stringify(ticket));
+  alert("Ticket created!");
+  generateQR(ticket.id);
 });
 
-function showTicket(ticket){
-  document.getElementById("ticketIdDisplay").textContent = ticket.id;
-  document.getElementById("ticketName").textContent = ticket.name;
-  document.getElementById("singlesLeft").textContent = ticket.singles;
-  document.getElementById("dayLeft").textContent = ticket.dayPasses;
-  document.getElementById("weekLeft").textContent = ticket.weekPasses;
+// Recharge ticket
+rechargeForm.addEventListener("submit", e => {
+  e.preventDefault();
+  const id = document.getElementById("rechargeId").value.trim();
+  const ticket = JSON.parse(localStorage.getItem(id));
+  if(!ticket){ alert("Ticket not found!"); return; }
 
-  // Show activation times if already scanned
-  document.getElementById("activatedAt").textContent = ticket.activated ? new Date(ticket.activated).toLocaleString() : "Not yet";
+  ticket.singles += parseInt(document.getElementById("addSingles").value)||0;
+  ticket.dayPasses += parseInt(document.getElementById("addDay").value)||0;
+  ticket.weekPasses += parseInt(document.getElementById("addWeek").value)||0;
 
-  manageSection.hidden = false;
+  localStorage.setItem(ticket.id, JSON.stringify(ticket));
+  alert("Ticket recharged!");
+  generateQR(ticket.id);
+});
 
-  // Display QR
+// Generate QR
+function generateQR(ticketID){
   new QRious({
-    element: document.getElementById("qrCanvas"),
-    value: ticket.id,
+    element: qrCanvas,
+    value: ticketID,  // Critical: QR encodes only the ticket ID
     size: 220
   });
 }
