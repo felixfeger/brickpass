@@ -45,14 +45,27 @@
 document.getElementById("ticketForm").addEventListener("submit", function(e){
   e.preventDefault();
 
-  const name = document.getElementById("name").value;
+  const name = document.getElementById("name").value.trim();
   const singles = parseInt(document.getElementById("singles").value)||0;
   const day = parseInt(document.getElementById("day").value)||0;
   const week = parseInt(document.getElementById("week").value)||0;
 
   // Generate unique ticket ID
   const id = "CM-" + Math.floor(Math.random()*1000000);
-  const ticket = {id, name, singles, dayPasses: day, weekPasses: week, activated: null};
+
+  // Ticket object includes all passes and activation timestamps
+  const ticket = {
+    id,
+    name,
+    singles,
+    dayPasses: day,
+    weekPasses: week,
+    activated: null,
+    dayActivated: null,
+    weekActivated: null
+  };
+
+  // Save to localStorage
   localStorage.setItem(id, JSON.stringify(ticket));
 
   // Hide form, show success
@@ -60,7 +73,7 @@ document.getElementById("ticketForm").addEventListener("submit", function(e){
   document.getElementById("success").hidden = false;
   document.getElementById("ticketId").textContent = id;
 
-  // Generate QR code (contains only ticket ID)
+  // Generate QR code (only ticket ID)
   new QRious({
     element: document.getElementById("qr"),
     value: id,
@@ -68,7 +81,7 @@ document.getElementById("ticketForm").addEventListener("submit", function(e){
   });
 
   // ===== SEND EMAIL (BrickPass) =====
-  emailjs.init("BU1Y1adeN-gshpVKY");            // Replace with your EmailJS Public Key
+  emailjs.init("BU1Y1adeN-gshpVKY"); // Replace with your EmailJS Public Key
   const qrImage = document.getElementById("qr").toDataURL("image/png");
 
   emailjs.send("noreply_citymetro", "brickpass_ticket", {
