@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>City Metro | Tickets</title>
+  <title>City Metro | BrickPass Cards</title>
 
   <link rel="stylesheet" href="style.css">
 
@@ -13,9 +13,9 @@
 <body>
 <div class="card">
   <h1>City Metro</h1>
-  <p class="subtitle">Online BrickPass Store</p>
+  <p class="subtitle">Official BrickPass Cards</p>
 
-  <!-- STEP 1 -->
+  <!-- STEP 1: Purchase Form -->
   <form id="ticketForm">
     <label>Ticket Type</label>
     <select id="ticket" required>
@@ -39,7 +39,7 @@
     <p class="fine">Simulated payment only</p>
   </form>
 
-  <!-- STEP 2 -->
+  <!-- STEP 2: Confirm Purchase -->
   <div id="confirm" hidden>
     <h2>Confirm Purchase</h2>
     <p><strong>Ticket:</strong> <span id="cTicket"></span></p>
@@ -48,10 +48,12 @@
     <button id="confirmBtn">Confirm & Issue Ticket</button>
   </div>
 
-  <!-- STEP 3 -->
+  <!-- STEP 3: Success Page -->
   <div id="success" hidden>
     <h2>Ticket Issued ✅</h2>
-    <canvas id="qr"></canvas>
+    <div>
+      <canvas id="qr" width="220" height="220" style="border:2px solid #0a1f44; border-radius:8px;"></canvas>
+    </div>
     <p>Your ticket has been emailed.</p>
   </div>
 </div>
