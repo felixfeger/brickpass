@@ -9,10 +9,9 @@
 <body>
 <div class="card">
   <h1>City Metro | Validator</h1>
-  <p>Scan QR to activate ticket</p>
+  <p>Scan QR to activate pass</p>
 
   <video id="video" width="300" height="300" autoplay></video>
-
   <div id="result" hidden style="margin-top:20px; border:1px solid #0a1f44; padding:10px;"></div>
 </div>
 
@@ -28,7 +27,6 @@ navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}})
 const canvas = document.createElement("canvas");
 const ctx = canvas.getContext("2d");
 
-// Scan loop
 function scan(){
   if(video.readyState === video.HAVE_ENOUGH_DATA){
     canvas.width = video.videoWidth;
@@ -40,60 +38,46 @@ function scan(){
   }
   requestAnimationFrame(scan);
 }
-
 scan();
 
-// Validate / activate ticket
 function validate(ticketID){
   const ticket = JSON.parse(localStorage.getItem(ticketID));
   if(!ticket){ show("INVALID TICKET ❌"); return; }
 
   const now = Date.now();
   let status = "";
-  let passActivated = false;
+  let activated = false;
 
   // SINGLE
   if(ticket.singles > 0 && !ticket.activated){
     ticket.activated = now;
-    passActivated = true;
+    ticket.singles--;
+    activated = true;
     status = "Single ride activated ✅";
-  } else if(ticket.activated){
-    status = "Single ride already activated ⚠️";
   }
-
   // DAY
-  if(!passActivated && ticket.dayPasses > 0){
-    if(!ticket.dayActivated){
-      ticket.dayActivated = now;
-      passActivated = true;
-      status = "Day pass activated ✅";
-    } else {
-      status = "Day pass already activated ⚠️";
-    }
+  else if(!activated && ticket.dayPasses > 0 && !ticket.dayActivated){
+    ticket.dayActivated = now;
+    activated = true;
+    status = "Day pass activated ✅";
   }
-
   // WEEK
-  if(!passActivated && ticket.weekPasses > 0){
-    if(!ticket.weekActivated){
-      ticket.weekActivated = now;
-      passActivated = true;
-      status = "Week pass activated ✅";
-    } else {
-      status = "Week pass already activated ⚠️";
-    }
+  else if(!activated && ticket.weekPasses > 0 && !ticket.weekActivated){
+    ticket.weekActivated = now;
+    activated = true;
+    status = "Week pass activated ✅";
   }
+  else status = "Already activated or no valid pass ❌";
 
+  // Save updated ticket
   localStorage.setItem(ticket.id, JSON.stringify(ticket));
 
-  // Expiration info
-  const singleExpire = ticket.activated ? new Date(ticket.activated + 2*60*60*1000).toLocaleString() : "Not yet";
-  const dayExpire = ticket.dayActivated ? new Date(ticket.dayActivated + 24*60*60*1000).toLocaleString() : "Not yet";
-  const weekExpire = ticket.weekActivated ? new Date(ticket.weekActivated + 7*24*60*60*1000).toLocaleString() : "Not yet";
+  // Expiration
+  const singleExpire = ticket.activated ? new Date(ticket.activated+2*60*60*1000).toLocaleString() : "Not yet";
+  const dayExpire = ticket.dayActivated ? new Date(ticket.dayActivated+24*60*60*1000).toLocaleString() : "Not yet";
+  const weekExpire = ticket.weekActivated ? new Date(ticket.weekActivated+7*24*60*60*1000).toLocaleString() : "Not yet";
 
-  show(status, ticket, singleExpire, dayExpire, weekExpire);
-}
-
-function show(status, ticket={}, singleExpire="", dayExpire="", weekExpire=""){
+  // Show result
   resultBox.hidden = false;
   resultBox.innerHTML = `
     <h3>${status}</h3>
