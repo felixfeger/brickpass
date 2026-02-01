@@ -2,16 +2,21 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>City Metro | Create Ticket</title>
+<title>City Metro | BrickPass</title>
 <link rel="stylesheet" href="style.css">
+
+<!-- QR Library -->
 <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
+<!-- EmailJS -->
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 </head>
 
 <body>
 <div class="card">
   <h1>City Metro</h1>
-  <p class="subtitle">Create Your Ticket</p>
+  <p class="subtitle">Create Your BrickPass</p>
 
+  <!-- STEP 1: Create Ticket Form -->
   <form id="ticketForm">
     <label>Name</label>
     <input id="name" required>
@@ -24,39 +29,56 @@
     <label>Week Passes</label>
     <input id="week" type="number" value="0" min="0">
 
-    <button type="submit">Generate Ticket</button>
+    <button type="submit">Generate BrickPass</button>
   </form>
 
+  <!-- STEP 2: Success Page -->
   <div id="success" hidden>
-    <h2>Ticket Created ✅</h2>
+    <h2>BrickPass Created ✅</h2>
     <canvas id="qr" width="220" height="220" style="border:2px solid #0a1f44; border-radius:8px;"></canvas>
     <p>Ticket ID: <span id="ticketId"></span></p>
-    <p>Save this QR or ID. You can manage passes <a href="manage.html">here</a>.</p>
+    <p>Save this QR or ID. You can recharge passes <a href="manage.html">here</a>.</p>
   </div>
 </div>
 
-<script src="script.js"></script>
 <script>
 document.getElementById("ticketForm").addEventListener("submit", function(e){
   e.preventDefault();
+
   const name = document.getElementById("name").value;
   const singles = parseInt(document.getElementById("singles").value)||0;
   const day = parseInt(document.getElementById("day").value)||0;
   const week = parseInt(document.getElementById("week").value)||0;
 
+  // Generate unique ticket ID
   const id = "CM-" + Math.floor(Math.random()*1000000);
-  const ticket = {id,name,singles,dayPasses:day,weekPasses:week,activated:null};
+  const ticket = {id, name, singles, dayPasses: day, weekPasses: week, activated: null};
   localStorage.setItem(id, JSON.stringify(ticket));
 
+  // Hide form, show success
   document.getElementById("ticketForm").hidden = true;
   document.getElementById("success").hidden = false;
   document.getElementById("ticketId").textContent = id;
 
+  // Generate QR code (contains only ticket ID)
   new QRious({
     element: document.getElementById("qr"),
     value: id,
     size: 220
   });
+
+  // ===== SEND EMAIL (BrickPass) =====
+  emailjs.init("BU1Y1adeN-gshpVKY");            // Replace with your EmailJS Public Key
+  const qrImage = document.getElementById("qr").toDataURL("image/png");
+
+  emailjs.send("noreply_citymetro", "brickpass_ticket", {
+    name: name,
+    ticket_id: id,
+    qr_image: qrImage
+  }).then(
+    () => console.log("BrickPass email sent successfully"),
+    (err) => console.error("Email sending failed:", err)
+  );
 });
 </script>
 </body>
