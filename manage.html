@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>City Metro |Recharge BrickPass Card</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
+</head>
+<body>
+<div class="card">
+  <h1>City Metro</h1>
+  <p class="subtitle">Recharge Your BrickPass</p>
+
+  <form id="lookupForm">
+    <label>Enter BricPass Card ID</label>
+    <input id="ticketIdInput" required>
+    <button type="submit">Load Card</button>
+  </form>
+
+  <div id="manageSection" hidden>
+    <h3>Ticket: <span id="ticketIdDisplay"></span></h3>
+    <p>Name: <span id="ticketName"></span></p>
+    <p>Singles: <span id="singlesLeft"></span></p>
+    <p>Day Passes: <span id="dayLeft"></span></p>
+    <p>Week Passes: <span id="weekLeft"></span></p>
+    <p>Activated at: <span id="activatedAt"></span></p>
+
+    <h4>Add Passes</h4>
+    <label>Singles</label>
+    <input id="addSingles" type="number" value="0" min="0">
+    <label>Day Passes</label>
+    <input id="addDay" type="number" value="0" min="0">
+    <label>Week Passes</label>
+    <input id="addWeek" type="number" value="0" min="0">
+    <button id="updateBtn">Update Passes</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+<script>
+const lookupForm = document.getElementById("lookupForm");
+const manageSection = document.getElementById("manageSection");
+
+lookupForm.addEventListener("submit", function(e){
+  e.preventDefault();
+  const id = document.getElementById("ticketIdInput").value;
+  const ticket = JSON.parse(localStorage.getItem(id));
+  if(!ticket){ alert("Ticket not found"); return; }
+
+  document.getElementById("ticketIdDisplay").textContent = ticket.id;
+  document.getElementById("ticketName").textContent = ticket.name;
+  document.getElementById("singlesLeft").textContent = ticket.singles;
+  document.getElementById("dayLeft").textContent = ticket.dayPasses;
+  document.getElementById("weekLeft").textContent = ticket.weekPasses;
+  document.getElementById("activatedAt").textContent = ticket.activated? new Date(ticket.activated).toLocaleString():"Not yet";
+
+  manageSection.hidden = false;
+
+  document.getElementById("updateBtn").onclick = function(){
+    ticket.singles += parseInt(document.getElementById("addSingles").value)||0;
+    ticket.dayPasses += parseInt(document.getElementById("addDay").value)||0;
+    ticket.weekPasses += parseInt(document.getElementById("addWeek").value)||0;
+    localStorage.setItem(ticket.id, JSON.stringify(ticket));
+    alert("Passes updated!");
+    location.reload();
+  }
+});
+</script>
+</body>
+</html>
