@@ -3,6 +3,7 @@ const scannerBox = document.getElementById("scanner");
 const resultBox = document.getElementById("result");
 const video = document.getElementById("video");
 
+// Staff login
 function login(){
   const u = document.getElementById("user").value;
   const p = document.getElementById("pass").value;
@@ -15,15 +16,19 @@ function login(){
   }
 }
 
+// Start camera for QR scanning
 function startCamera(){
   navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}})
-  .then(stream => video.srcObject = stream);
+    .then(stream => video.srcObject = stream)
+    .catch(err => console.error(err));
   scan();
 }
 
+// Create canvas for QR processing
 const canvas = document.createElement("canvas");
 const ctx = canvas.getContext("2d");
 
+// Main scan loop
 function scan(){
   if(video.readyState === video.HAVE_ENOUGH_DATA){
     canvas.width = video.videoWidth;
@@ -36,45 +41,70 @@ function scan(){
   requestAnimationFrame(scan);
 }
 
+// Validate ticket and automatically pick pass
 function validate(id){
   const ticket = JSON.parse(localStorage.getItem(id));
   if(!ticket){ show("INVALID TICKET ❌"); return; }
 
   const now = Date.now();
-  let activatedText = "Not yet";
+  let usedPassType = null;
 
-  // Single ride activation (first use)
-  if(ticket.singles > 0 && !ticket.activated){
-    ticket.activated = now;
+  // Single ride: priority #1
+  if(ticket.singles > 0){
+    usedPassType = "Single";
     ticket.singles--;
-    localStorage.setItem(ticket.id, JSON.stringify(ticket));
+    if(!ticket.activated) ticket.activated = now;
+  }
+  // Day pass: priority #2
+  else if(ticket.dayPasses > 0){
+    usedPassType = "Day";
+    if(!ticket.dayActivated) ticket.dayActivated = now;
+  }
+  // Week pass: priority #3
+  else if(ticket.weekPasses > 0){
+    usedPassType = "Week";
+    if(!ticket.weekActivated) ticket.weekActivated = now;
   }
 
-  if(ticket.activated) activatedText = new Date(ticket.activated).toLocaleString();
+  // Save updated ticket
+  localStorage.setItem(ticket.id, JSON.stringify(ticket));
 
-  // Calculate validity
-  let singleStatus = ticket.singles > 0 ? "Available" : "Used";
+  // Compute validity and expiration
+  let singleStatus = ticket.singles > 0 ? "Available" : "None";
   let dayStatus = "None";
   let weekStatus = "None";
 
-  // Day Pass: valid 24 hours from activation
+  // Single validity: 2 hours from activation
+  if(ticket.activated){
+    const expire = ticket.activated + 2*60*60*1000;
+    singleStatus = now < expire ? `Active (expires ${new Date(expire).toLocaleTimeString()})` : "Expired";
+  }
+
+  // Day pass validity: 24 hours
   if(ticket.dayPasses > 0){
-    if(!ticket.dayActivated) ticket.dayActivated = now;
-    const expire = ticket.dayActivated + 24*60*60*1000;
-    dayStatus = now < expire ? `Active (expires ${new Date(expire).toLocaleString()})` : "Expired";
+    if(ticket.dayActivated){
+      const expire = ticket.dayActivated + 24*60*60*1000;
+      dayStatus = now < expire ? `Active (expires ${new Date(expire).toLocaleString()})` : "Expired";
+    } else {
+      dayStatus = "Not yet activated";
+    }
   }
 
-  // Week Pass: valid 7 days from activation
+  // Week pass validity: 7 days
   if(ticket.weekPasses > 0){
-    if(!ticket.weekActivated) ticket.weekActivated = now;
-    const expire = ticket.weekActivated + 7*24*60*60*1000;
-    weekStatus = now < expire ? `Active (expires ${new Date(expire).toLocaleString()})` : "Expired";
+    if(ticket.weekActivated){
+      const expire = ticket.weekActivated + 7*24*60*60*1000;
+      weekStatus = now < expire ? `Active (expires ${new Date(expire).toLocaleString()})` : "Expired";
+    } else {
+      weekStatus = "Not yet activated";
+    }
   }
 
-  show("VALID ✅", ticket, activatedText, singleStatus, dayStatus, weekStatus);
+  show(`VALID ✅ (${usedPassType || "No valid pass"})`, ticket, singleStatus, dayStatus, weekStatus);
 }
 
-function show(status, ticket={}, activatedText="", singleStatus="", dayStatus="", weekStatus=""){
+// Display ticket info to inspector
+function show(status, ticket={}, singleStatus="", dayStatus="", weekStatus=""){
   resultBox.hidden = false;
   resultBox.innerHTML = `<h3>${status}</h3>
     <p>ID: ${ticket.id}</p>
@@ -82,5 +112,7 @@ function show(status, ticket={}, activatedText="", singleStatus="", dayStatus=""
     <p>Singles left: ${ticket.singles} (${singleStatus})</p>
     <p>Day Passes: ${ticket.dayPasses} (${dayStatus})</p>
     <p>Week Passes: ${ticket.weekPasses} (${weekStatus})</p>
-    <p>Single ride activated at: ${activatedText}</p>`;
+    <p>Single ride activated at: ${ticket.activated ? new Date(ticket.activated).toLocaleString() : "Not yet"}</p>
+    <p>Day pass activated at: ${ticket.dayActivated ? new Date(ticket.dayActivated).toLocaleString() : "Not yet"}</p>
+    <p>Week pass activated at: ${ticket.weekActivated ? new Date(ticket.weekActivated).toLocaleString() : "Not yet"}</p>`;
 }
