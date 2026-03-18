@@ -109,6 +109,19 @@ input::placeholder{color:#bbb;}
 .sw{background:none;border:none;font-family:inherit;font-size:12px;color:#aaa;cursor:pointer;text-decoration:underline;padding:6px;display:block;margin:6px auto 0;}
 .sw:hover{color:#111;}
 footer{border-top:1px solid #eee;padding:16px 20px;font-size:11px;color:#aaa;line-height:1.6;text-align:center;background:#fff;margin-top:auto;}
+
+.ann-bar {
+  background: #111;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 9px 20px;
+  text-align: center;
+  letter-spacing: 0.3px;
+  line-height: 1.4;
+  display: none;
+}
+.ann-bar.visible { display: block; }
 </style>
 </head>
 <body>
@@ -121,6 +134,10 @@ footer{border-top:1px solid #eee;padding:16px 20px;font-size:11px;color:#aaa;lin
   <a class="hb" href="https://citymetro.xyz" target="_blank" style="margin-left:8px;">citymetro.xyz ↗</a>
 </header>
 <div class="con">
+
+<!-- ANNOUNCEMENT BAR -->
+<div class="ann-bar" id="annBar"></div>
+
 
 <!-- LOOKUP -->
 <div class="screen active" id="sLookup">
@@ -398,6 +415,23 @@ function sl(btn,loading,label){
 }
 document.querySelectorAll('.mo').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)closeMod();}));
 document.getElementById('ci').addEventListener('keypress',e=>{if(e.key==='Enter')loadCard();});
+
+async function fetchAnnouncement() {
+  try {
+    var r = await fetch(API + '/api/admin/settings');
+    if (!r.ok) return;
+    var s = await r.json();
+    var msg = s.validator_announcement || '';
+    var bar = document.getElementById('annBar');
+    if (msg && msg.trim()) {
+      bar.textContent = msg.trim();
+      bar.classList.add('visible');
+    } else {
+      bar.classList.remove('visible');
+    }
+  } catch(e) { /* silently fail */ }
+}
+
 </script>
 </body>
 </html>
